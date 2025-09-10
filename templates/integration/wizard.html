@@ -7,40 +7,12 @@
     <link href="{{ url_for('static', filename='css/cloudspend-style.css') }}" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Integration Wizard Specific Styles */
-        .wizard-container {
-            background: var(--bg-primary);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            margin: 24px;
-        }
-
-        .wizard-header {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, #1557b0 100%);
-            color: white;
-            padding: 32px;
-            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-        }
-
-        .wizard-title {
-            font-size: 28px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .wizard-subtitle {
-            opacity: 0.9;
-            font-size: 16px;
-            margin: 0;
-        }
-
         .wizard-progress {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 24px 32px;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-light);
+            padding: 24px;
+            margin-bottom: 24px;
         }
 
         .progress-step {
@@ -68,7 +40,7 @@
         }
 
         .progress-line {
-            width: 24px;
+            width: 40px;
             height: 2px;
             background: var(--border-light);
             margin: 0 8px;
@@ -78,74 +50,12 @@
             background: var(--secondary-green);
         }
 
-        .wizard-content {
-            padding: 32px;
-            min-height: 500px;
-        }
-
         .step-container {
             display: none;
         }
 
         .step-container.active {
             display: block;
-        }
-
-        .step-header {
-            margin-bottom: 24px;
-        }
-
-        .step-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--bg-secondary);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-right: 16px;
-            vertical-align: middle;
-        }
-
-        .step-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--text-primary);
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        .form-label {
-            display: block;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .form-label.required::after {
-            content: ' *';
-            color: var(--danger-red);
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-md);
-            font-size: 14px;
-            transition: border-color 0.2s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
         }
 
         .provider-grid {
@@ -191,51 +101,100 @@
             color: var(--text-secondary);
         }
 
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: var(--danger-red);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+
         .wizard-actions {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 24px 32px;
+            padding: 24px 0;
             border-top: 1px solid var(--border-light);
+            margin-top: 32px;
+        }
+
+        .step-indicator {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             background: var(--bg-secondary);
-        }
-
-        .btn-wizard {
-            padding: 12px 24px;
-            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-        }
-
-        .btn-wizard.primary {
-            background: var(--primary-blue);
-            color: white;
-        }
-
-        .btn-wizard.primary:hover {
-            background: #1557b0;
-        }
-
-        .btn-wizard.secondary {
-            background: var(--bg-primary);
             color: var(--text-primary);
-            border: 1px solid var(--border-light);
+            margin-right: 16px;
         }
 
-        .btn-wizard.secondary:hover {
-            background: var(--hover-bg);
+        .step-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
-        .btn-wizard:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .completion-section {
+            text-align: center;
+            padding: 40px 20px;
         }
 
-        .text-muted {
-            color: var(--text-muted);
-            font-size: 12px;
+        .completion-icon {
+            font-size: 64px;
+            color: var(--secondary-green);
+            margin-bottom: 20px;
+        }
+
+        .completion-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .completion-description {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -280,11 +239,67 @@
                 </div>
                 
                 <div class="nav-section">
+                    <div class="nav-section-title">Analysis</div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-chart-line"></i></div>
+                            <span>Cost Explorer</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-lightbulb"></i></div>
+                            <span>Recommendations</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                            <span>Anomaly Detection</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Resources</div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-database"></i></div>
+                            <span>Snapshots</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-bell"></i></div>
+                            <span>CloudWatch Alarms</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-server"></i></div>
+                            <span>EC2 Instances</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
                     <div class="nav-section-title">Settings</div>
                     <div class="nav-item">
-                        <a href="/integration" class="nav-link active">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-cog"></i></div>
+                            <span>Configuration</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/integration/wizard" class="nav-link active">
                             <div class="icon"><i class="fas fa-plug"></i></div>
                             <span>Account Integration</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/sync-management" class="nav-link">
+                            <div class="icon"><i class="fas fa-sync"></i></div>
+                            <span>Sync Management</span>
                         </a>
                     </div>
                 </div>
@@ -294,11 +309,23 @@
         <!-- Main Content -->
         <main class="main-content">
             <div class="content-area">
-                <div class="wizard-container">
-                    <!-- Wizard Header -->
-                    <div class="wizard-header">
-                        <h1 class="wizard-title">Integrate Account</h1>
-                        <p class="wizard-subtitle">Connect your AWS account to start monitoring and optimizing costs</p>
+                <!-- Header -->
+                <div class="header">
+                    <div>
+                        <h1 class="header-title">Account Integration</h1>
+                        <p class="text-muted">Connect your AWS account to start monitoring and optimizing costs</p>
+                    </div>
+                    <div class="header-actions">
+                        <a href="/" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Progress Indicator -->
+                <div class="card">
+                    <div class="card-body">
                         <div class="wizard-progress">
                             <div class="progress-step active" data-step="1">1</div>
                             <div class="progress-line"></div>
@@ -307,14 +334,16 @@
                             <div class="progress-step" data-step="3">3</div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Wizard Content -->
-                    <div class="wizard-content">
+                <!-- Wizard Content -->
+                <div class="card">
+                    <div class="card-body">
                         <!-- Step 1: Display Name -->
                         <div class="step-container active" data-step="1">
                             <div class="step-header">
-                                <span class="step-number">1</span>
-                                <span class="step-title">Display Name</span>
+                                <div class="step-number">1</div>
+                                <div class="step-title">Account Display Name</div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label required">Display Name</label>
@@ -326,8 +355,8 @@
                         <!-- Step 2: Cloud Provider -->
                         <div class="step-container" data-step="2">
                             <div class="step-header">
-                                <span class="step-number">2</span>
-                                <span class="step-title">Cloud Provider</span>
+                                <div class="step-number">2</div>
+                                <div class="step-title">Select Cloud Provider</div>
                             </div>
                             <div class="provider-grid">
                                 <div class="provider-card selected" data-provider="aws">
@@ -357,28 +386,35 @@
                         <!-- Step 3: Complete -->
                         <div class="step-container" data-step="3">
                             <div class="step-header">
-                                <span class="step-number">3</span>
-                                <span class="step-title">Integration Complete</span>
+                                <div class="step-number">3</div>
+                                <div class="step-title">Integration Complete</div>
                             </div>
-                            <div style="text-align: center; padding: 40px 20px;">
-                                <div style="font-size: 64px; color: var(--secondary-green); margin-bottom: 20px;">
+                            <div class="completion-section">
+                                <div class="completion-icon">
                                     <i class="fas fa-check-circle"></i>
                                 </div>
-                                <h3 style="font-size: 24px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">Ready to Connect!</h3>
-                                <p style="color: var(--text-secondary); font-size: 16px; line-height: 1.5;">
-                                    Your AWS account integration is configured and ready to be saved.
+                                <h3 class="completion-title">Ready to Connect!</h3>
+                                <p class="completion-description">
+                                    Your AWS account integration is configured and ready to be saved.<br>
+                                    Click "Complete" to finish the setup process.
                                 </p>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Wizard Actions -->
-                    <div class="wizard-actions">
-                        <button class="btn-wizard secondary" id="prevBtn" onclick="previousStep()" disabled>Previous</button>
-                        <div class="step-indicator">
-                            Step <span id="currentStepNum">1</span> of 3
+                        <!-- Wizard Actions -->
+                        <div class="wizard-actions">
+                            <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()" disabled>
+                                <i class="fas fa-arrow-left"></i>
+                                Previous
+                            </button>
+                            <div class="step-indicator">
+                                Step <span id="currentStepNum">1</span> of 3
+                            </div>
+                            <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+                                Next
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
-                        <button class="btn-wizard primary" id="nextBtn" onclick="nextStep()">Next</button>
                     </div>
                 </div>
             </div>
@@ -416,7 +452,12 @@
 
             // Update buttons
             document.getElementById('prevBtn').disabled = currentStep === 1;
-            document.getElementById('nextBtn').textContent = currentStep === totalSteps ? 'Complete' : 'Next';
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentStep === totalSteps) {
+                nextBtn.innerHTML = '<i class="fas fa-check"></i> Complete';
+            } else {
+                nextBtn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
+            }
             document.getElementById('currentStepNum').textContent = currentStep;
         }
 
@@ -427,7 +468,7 @@
             } else {
                 // Complete wizard
                 alert('Account integration completed successfully!');
-                window.location.href = '/dashboard';
+                window.location.href = '/';
             }
         }
 
