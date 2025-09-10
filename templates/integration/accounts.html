@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Integration - CloudSpend</title>
+    <link href="{{ url_for('static', filename='css/cloudspend-style.css') }}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="icon">☁️</div>
+                    <span>CloudSpend</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <div class="nav-item">
+                        <a href="/" class="nav-link">
+                            <div class="icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <span>Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/business-units" class="nav-link">
+                            <div class="icon"><i class="fas fa-users"></i></div>
+                            <span>Business Units</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/budgets" class="nav-link">
+                            <div class="icon"><i class="fas fa-chart-bar"></i></div>
+                            <span>Budgets</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/reports" class="nav-link">
+                            <div class="icon"><i class="fas fa-file-alt"></i></div>
+                            <span>Reports</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Settings</div>
+                    <div class="nav-item">
+                        <a href="/integration" class="nav-link active">
+                            <div class="icon"><i class="fas fa-plug"></i></div>
+                            <span>Account Integration</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-area">
+                <div class="header">
+                    <div>
+                        <h1 class="header-title">Account Integration</h1>
+                        <p class="text-muted">Manage your cloud provider connections</p>
+                    </div>
+                    <div class="header-actions">
+                        <a href="/integration/wizard" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Add Account
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Connected Accounts -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Connected Accounts</h3>
+                        <p class="card-subtitle">Manage your integrated cloud accounts</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Account Name</th>
+                                        <th>Provider</th>
+                                        <th>Status</th>
+                                        <th>Last Sync</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 12px;">
+                                                <div style="width: 32px; height: 32px; background: #ff9900; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white;">
+                                                    <i class="fab fa-aws"></i>
+                                                </div>
+                                                <div>
+                                                    <div style="font-weight: 600;">Production AWS</div>
+                                                    <div style="font-size: 12px; color: var(--text-secondary);">123456789012</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>Amazon Web Services</td>
+                                        <td>
+                                            <span class="priority-badge low">Connected</span>
+                                        </td>
+                                        <td>2 hours ago</td>
+                                        <td>
+                                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">
+                                                <i class="fas fa-sync"></i>
+                                                Sync Now
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Integration Guide -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Integration Guide</h3>
+                        <p class="card-subtitle">Steps to connect your cloud accounts</p>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                            <div style="text-align: center; padding: 20px;">
+                                <div style="width: 60px; height: 60px; background: var(--primary-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: white; font-size: 24px;">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <h4 style="margin-bottom: 8px;">1. Create IAM Role</h4>
+                                <p style="color: var(--text-secondary); font-size: 14px;">Set up cross-account access with proper permissions</p>
+                            </div>
+                            <div style="text-align: center; padding: 20px;">
+                                <div style="width: 60px; height: 60px; background: var(--secondary-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: white; font-size: 24px;">
+                                    <i class="fas fa-link"></i>
+                                </div>
+                                <h4 style="margin-bottom: 8px;">2. Connect Account</h4>
+                                <p style="color: var(--text-secondary); font-size: 14px;">Use our wizard to securely link your account</p>
+                            </div>
+                            <div style="text-align: center; padding: 20px;">
+                                <div style="width: 60px; height: 60px; background: var(--warning-yellow); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: white; font-size: 24px;">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h4 style="margin-bottom: 8px;">3. Start Optimizing</h4>
+                                <p style="color: var(--text-secondary); font-size: 14px;">Get insights and recommendations immediately</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CloudSpend{% endblock %}</title>
+    <link href="{{ url_for('static', filename='css/cloudspend-style.css') }}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="icon">☁️</div>
+                    <span>CloudSpend</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <div class="nav-item">
+                        <a href="/" class="nav-link">
+                            <div class="icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <span>Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/business-units" class="nav-link">
+                            <div class="icon"><i class="fas fa-users"></i></div>
+                            <span>Business Units</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/budgets" class="nav-link">
+                            <div class="icon"><i class="fas fa-chart-bar"></i></div>
+                            <span>Budgets</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/reports" class="nav-link">
+                            <div class="icon"><i class="fas fa-file-alt"></i></div>
+                            <span>Reports</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Settings</div>
+                    <div class="nav-item">
+                        <a href="/integration" class="nav-link">
+                            <div class="icon"><i class="fas fa-plug"></i></div>
+                            <span>Account Integration</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-area">
+                {% block content %}
+                <div class="header">
+                    <h1 class="header-title">{{ title or 'CloudSpend' }}</h1>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <p>Welcome to CloudSpend - Your AWS Cost Optimization Platform</p>
+                    </div>
+                </div>
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

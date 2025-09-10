@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudSpend - AWS Cost Optimization</title>
+    <link href="{{ url_for('static', filename='css/cloudspend-style.css') }}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="icon">☁️</div>
+                    <span>CloudSpend</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <div class="nav-item">
+                        <a href="/" class="nav-link active">
+                            <div class="icon"><i class="fas fa-tachometer-alt"></i></div>
+                            <span>Dashboard</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/business-units" class="nav-link">
+                            <div class="icon"><i class="fas fa-users"></i></div>
+                            <span>Business Units</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/budgets" class="nav-link">
+                            <div class="icon"><i class="fas fa-chart-bar"></i></div>
+                            <span>Budgets</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/reports" class="nav-link">
+                            <div class="icon"><i class="fas fa-file-alt"></i></div>
+                            <span>Reports</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Analysis</div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-chart-line"></i></div>
+                            <span>Cost Explorer</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-lightbulb"></i></div>
+                            <span>Recommendations</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                            <span>Anomaly Detection</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Resources</div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-database"></i></div>
+                            <span>Snapshots</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-bell"></i></div>
+                            <span>CloudWatch Alarms</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-server"></i></div>
+                            <span>EC2 Instances</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Settings</div>
+                    <div class="nav-item">
+                        <a href="#" class="nav-link">
+                            <div class="icon"><i class="fas fa-cog"></i></div>
+                            <span>Configuration</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/integration" class="nav-link">
+                            <div class="icon"><i class="fas fa-plug"></i></div>
+                            <span>Account Integration</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/sync-management" class="nav-link">
+                            <div class="icon"><i class="fas fa-sync"></i></div>
+                            <span>Sync Management</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-area">
+                <!-- Header -->
+                <div class="header">
+                    <div>
+                        <h1 class="header-title">Cost Dashboard</h1>
+                        <p class="text-muted">Monitor and optimize your AWS spending</p>
+                    </div>
+                    <div class="header-actions">
+                        <select class="btn btn-secondary">
+                            <option>US East (N. Virginia)</option>
+                            <option>US West (Oregon)</option>
+                            <option>EU (Ireland)</option>
+                        </select>
+                        <a href="/integration/wizard" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Integrate Account
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card {% if data.cost_change < 0 %}positive{% elif data.cost_change > 0 %}negative{% else %}neutral{% endif %}">
+                        <div class="metric-header">
+                            <div class="metric-title">Current Month Cost</div>
+                            <div class="metric-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">${{ "%.2f"|format(data.current_month_cost or 0) }}</div>
+                        <div class="metric-change {% if data.cost_change < 0 %}positive{% elif data.cost_change > 0 %}negative{% else %}neutral{% endif %}">
+                            <i class="fas fa-{% if data.cost_change < 0 %}arrow-down{% elif data.cost_change > 0 %}arrow-up{% else %}minus{% endif %}"></i>
+                            {{ "%.1f"|format(data.cost_change or 0) }}% from last month
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-title">Total Resources</div>
+                            <div class="metric-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ data.total_resources or 0 }}</div>
+                        <div class="metric-change neutral">
+                            <i class="fas fa-info-circle"></i>
+                            Across all services
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-title">Active Alarms</div>
+                            <div class="metric-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ data.active_alarms or 0 }}</div>
+                        <div class="metric-change {% if data.active_alarms > 0 %}negative{% else %}positive{% endif %}">
+                            <i class="fas fa-{% if data.active_alarms > 0 %}exclamation-triangle{% else %}check-circle{% endif %}"></i>
+                            {% if data.active_alarms > 0 %}Needs attention{% else %}All systems normal{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-title">Recommendations</div>
+                            <div class="metric-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ data.recommendations_count or 0 }}</div>
+                        <div class="metric-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            Potential savings available
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Tables Row -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 32px;">
+                    <!-- Cost Trend Chart -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Cost Trend</h3>
+                            <p class="card-subtitle">Monthly spending over time</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="costChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Services -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Top Services</h3>
+                            <p class="card-subtitle">By cost this month</p>
+                        </div>
+                        <div class="card-body">
+                            {% if data.top_services %}
+                                {% for service in data.top_services %}
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--text-primary);">{{ service.name }}</div>
+                                        <div style="font-size: 12px; color: var(--text-secondary);">{{ service.percentage }}% of total</div>
+                                    </div>
+                                    <div style="font-weight: 700; color: var(--text-primary);">${{ "%.2f"|format(service.cost) }}</div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No service data available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Cost Optimization Recommendations</h3>
+                        <p class="card-subtitle">AI-powered suggestions to reduce your AWS costs</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="recommendations-grid">
+                            {% if data.recommendations %}
+                                {% for rec in data.recommendations %}
+                                <div class="recommendation-card {{ rec.priority }}-priority">
+                                    <div class="recommendation-header">
+                                        <h4 class="recommendation-title">{{ rec.title }}</h4>
+                                        <div class="recommendation-savings">${{ "%.2f"|format(rec.potential_savings) }}</div>
+                                    </div>
+                                    <p class="recommendation-description">{{ rec.description }}</p>
+                                    <div class="recommendation-actions">
+                                        <button class="btn btn-primary btn-sm">Apply</button>
+                                        <button class="btn btn-secondary btn-sm">Learn More</button>
+                                        <span class="priority-badge {{ rec.priority }}">{{ rec.priority }} priority</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No recommendations available. Connect your AWS account to get started.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Cost Trend Chart
+        const ctx = document.getElementById('costChart').getContext('2d');
+        const costChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                datasets: [{
+                    label: 'Monthly Cost ($)',
+                    data: {{ data.cost_trend or [0, 0, 0, 0, 0] }},
+                    borderColor: '#1a73e8',
+                    backgroundColor: 'rgba(26, 115, 232, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#1a73e8',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                elements: {
+                    point: {
+                        hoverRadius: 8
+                    }
+                }
+            }
+        });
+
+        // Auto-refresh data every 5 minutes
+        setInterval(function() {
+            fetch('/api/cost-data')
+                .then(response => response.json())
+                .then(data => {
+                    costChart.data.labels = data.labels;
+                    costChart.data.datasets[0].data = data.data;
+                    costChart.update();
+                });
+        }, 300000);
+    </script>
+</body>
+</html>
