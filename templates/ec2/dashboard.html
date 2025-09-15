@@ -381,6 +381,7 @@
                                 <label for="durationFilter" style="margin-right: 8px; font-weight: 600;">Filter:</label>
                                 <select id="durationFilter" onchange="filterStoppedInstances()" style="padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
                                     <option value="all">All Stopped</option>
+                                    <option value="7">Stopped > 7 Days</option>
                                     <option value="30">Stopped > 30 Days</option>
                                     <option value="60">Stopped > 60 Days</option>
                                     <option value="90">Stopped > 90 Days</option>
@@ -794,6 +795,8 @@
                 const daysSinceLaunch = Math.floor((now - launchTime) / (1000 * 60 * 60 * 24));
                 
                 switch(filterValue) {
+                    case '7':
+                        return daysSinceLaunch >= 7;
                     case '30':
                         return daysSinceLaunch >= 30;
                     case '60':
@@ -879,6 +882,8 @@
                     const daysSinceLaunch = Math.floor((now - launchTime) / (1000 * 60 * 60 * 24));
                     
                     switch(filterValue) {
+                        case '7':
+                            return daysSinceLaunch >= 7;
                         case '30':
                             return daysSinceLaunch >= 30;
                         case '60':
