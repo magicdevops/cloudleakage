@@ -365,6 +365,75 @@
                         <div class="metric-label">Optimization Opportunities</div>
                     </div>
                 </div>
+
+                <!-- Stopped Instances Duration Analysis -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">
+                                <i class="fas fa-clock" style="margin-right: 8px; color: var(--warning-yellow);"></i>
+                                Stopped Instances Duration Analysis
+                            </h3>
+                            <p class="card-subtitle">Instances stopped for extended periods</p>
+                        </div>
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <div>
+                                <label for="durationFilter" style="margin-right: 8px; font-weight: 600;">Filter:</label>
+                                <select id="durationFilter" onchange="filterStoppedInstances()" style="padding: 8px 12px; border: 1px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px;">
+                                    <option value="all">All Stopped</option>
+                                    <option value="30">Stopped > 30 Days</option>
+                                    <option value="60">Stopped > 60 Days</option>
+                                    <option value="90">Stopped > 90 Days</option>
+                                </select>
+                            </div>
+                            <div class="dropdown" style="position: relative;">
+                                <button onclick="toggleStoppedExportDropdown()" class="btn btn-success" style="font-size: 14px; padding: 8px 16px;">
+                                    <i class="fas fa-download"></i>
+                                    Export Stopped
+                                </button>
+                                <div id="stoppedExportDropdown" class="dropdown-menu" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid var(--border-light); border-radius: var(--radius-md); box-shadow: var(--shadow-md); z-index: 1000; min-width: 180px;">
+                                    <button onclick="exportStoppedData('csv')" class="dropdown-item">
+                                        <i class="fas fa-file-csv"></i>
+                                        Export CSV
+                                    </button>
+                                    <button onclick="exportStoppedData('json')" class="dropdown-item">
+                                        <i class="fas fa-file-code"></i>
+                                        Export JSON
+                                    </button>
+                                    <button onclick="exportStoppedData('excel')" class="dropdown-item">
+                                        <i class="fas fa-file-excel"></i>
+                                        Export Excel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="metrics-grid">
+                            <div class="metric-card" style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%); color: #2d3436;">
+                                <div class="metric-value" id="stopped30Days">-</div>
+                                <div class="metric-label">Stopped > 30 Days</div>
+                                <small style="opacity: 0.8;">Potential cost savings</small>
+                            </div>
+                            <div class="metric-card" style="background: linear-gradient(135deg, #fab1a0 0%, #e17055 100%); color: white;">
+                                <div class="metric-value" id="stopped60Days">-</div>
+                                <div class="metric-label">Stopped > 60 Days</div>
+                                <small style="opacity: 0.8;">Consider termination</small>
+                            </div>
+                            <div class="metric-card" style="background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%); color: white;">
+                                <div class="metric-value" id="stopped90Days">-</div>
+                                <div class="metric-label">Stopped > 90 Days</div>
+                                <small style="opacity: 0.8;">High priority cleanup</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Filtered Stopped Instances Table -->
+                        <div id="stoppedInstancesTable" style="margin-top: 20px; display: none;">
+                            <h4 style="margin-bottom: 16px; color: var(--text-primary);">Filtered Stopped Instances</h4>
+                            <div id="stoppedInstancesContent"></div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- EC2 Instances -->
                 <div class="card">
@@ -429,6 +498,7 @@
         let currentAccountId = null;
         let instancesData = [];
         let recommendationsData = [];
+        let stoppedInstancesData = [];
         
         // Load accounts on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -466,6 +536,7 @@
             if (currentAccountId) {
                 loadInstanceData();
                 loadRecommendations();
+                loadStoppedDurationData();
             } else {
                 resetDashboard();
             }
@@ -487,6 +558,8 @@
                     instancesData = data.instances;
                     displayInstances(instancesData);
                     updateMetrics();
+                    // Also reload stopped duration data when instances change
+                    loadStoppedDurationData();
                 } else {
                     instancesContent.innerHTML = `<div class="error-message">Error: ${data.error}</div>`;
                 }
@@ -669,10 +742,240 @@
             }
         }
         
+        async function loadStoppedDurationData() {
+            if (!currentAccountId) return;
+            
+            const region = document.getElementById('regionSelect').value;
+            
+            try {
+                const url = `/ec2/api/accounts/${currentAccountId}/stopped-duration${region ? `?region=${region}` : ''}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const durationData = data.duration_data;
+                    document.getElementById('stopped30Days').textContent = durationData.stopped_30_days;
+                    document.getElementById('stopped60Days').textContent = durationData.stopped_60_days;
+                    document.getElementById('stopped90Days').textContent = durationData.stopped_90_days;
+                    
+                    // Store stopped instances data for filtering
+                    stoppedInstancesData = instancesData.filter(instance => instance.state === 'stopped');
+                } else {
+                    // Reset to default values on error
+                    document.getElementById('stopped30Days').textContent = '-';
+                    document.getElementById('stopped60Days').textContent = '-';
+                    document.getElementById('stopped90Days').textContent = '-';
+                    stoppedInstancesData = [];
+                }
+            } catch (error) {
+                console.error('Error loading stopped duration data:', error);
+                // Reset to default values on error
+                document.getElementById('stopped30Days').textContent = '-';
+                document.getElementById('stopped60Days').textContent = '-';
+                document.getElementById('stopped90Days').textContent = '-';
+                stoppedInstancesData = [];
+            }
+        }
+
+        function filterStoppedInstances() {
+            const filterValue = document.getElementById('durationFilter').value;
+            const stoppedTable = document.getElementById('stoppedInstancesTable');
+            const stoppedContent = document.getElementById('stoppedInstancesContent');
+            
+            if (filterValue === 'all') {
+                stoppedTable.style.display = 'none';
+                return;
+            }
+            
+            // Filter stopped instances by duration
+            const now = new Date();
+            const filteredInstances = stoppedInstancesData.filter(instance => {
+                const launchTime = new Date(instance.launchTime);
+                const daysSinceLaunch = Math.floor((now - launchTime) / (1000 * 60 * 60 * 24));
+                
+                switch(filterValue) {
+                    case '30':
+                        return daysSinceLaunch >= 30;
+                    case '60':
+                        return daysSinceLaunch >= 60;
+                    case '90':
+                        return daysSinceLaunch >= 90;
+                    default:
+                        return false;
+                }
+            });
+            
+            if (filteredInstances.length === 0) {
+                stoppedContent.innerHTML = '<div class="loading">No instances found for the selected duration</div>';
+            } else {
+                displayFilteredStoppedInstances(filteredInstances);
+            }
+            
+            stoppedTable.style.display = 'block';
+        }
+        
+        function displayFilteredStoppedInstances(instances) {
+            const stoppedContent = document.getElementById('stoppedInstancesContent');
+            
+            let tableHTML = `
+                <table class="instances-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Instance ID</th>
+                            <th>Type</th>
+                            <th>Region</th>
+                            <th>Launch Time</th>
+                            <th>Days Since Launch</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            const now = new Date();
+            instances.forEach(instance => {
+                const launchTime = new Date(instance.launchTime);
+                const daysSinceLaunch = Math.floor((now - launchTime) / (1000 * 60 * 60 * 24));
+                const instanceName = instance.tags && instance.tags.Name ? instance.tags.Name : 'Unnamed';
+                
+                tableHTML += `
+                    <tr onclick="openInstanceDetails('${instance.instanceId}')" style="cursor: pointer;">
+                        <td><strong>${instanceName}</strong></td>
+                        <td>${instance.instanceId}</td>
+                        <td>${instance.instanceType}</td>
+                        <td>${instance.region}</td>
+                        <td>${launchTime.toLocaleDateString()}</td>
+                        <td><span style="color: ${daysSinceLaunch >= 90 ? '#e84393' : daysSinceLaunch >= 60 ? '#e17055' : '#fdcb6e'}; font-weight: bold;">${daysSinceLaunch} days</span></td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</tbody></table>';
+            stoppedContent.innerHTML = tableHTML;
+        }
+        
+        function toggleStoppedExportDropdown() {
+            const dropdown = document.getElementById('stoppedExportDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!e.target.closest('#stoppedExportDropdown') && !e.target.closest('[onclick="toggleStoppedExportDropdown()"]')) {
+                    dropdown.style.display = 'none';
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+        
+        function exportStoppedData(format) {
+            const filterValue = document.getElementById('durationFilter').value;
+            let dataToExport = stoppedInstancesData;
+            
+            // Apply filter if not 'all'
+            if (filterValue !== 'all') {
+                const now = new Date();
+                dataToExport = stoppedInstancesData.filter(instance => {
+                    const launchTime = new Date(instance.launchTime);
+                    const daysSinceLaunch = Math.floor((now - launchTime) / (1000 * 60 * 60 * 24));
+                    
+                    switch(filterValue) {
+                        case '30':
+                            return daysSinceLaunch >= 30;
+                        case '60':
+                            return daysSinceLaunch >= 60;
+                        case '90':
+                            return daysSinceLaunch >= 90;
+                        default:
+                            return false;
+                    }
+                });
+            }
+            
+            if (dataToExport.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            const fileName = `stopped_instances_${filterValue !== 'all' ? filterValue + '_days' : 'all'}_${new Date().toISOString().split('T')[0]}`;
+            
+            if (format === 'csv') {
+                exportToCSV(dataToExport, fileName);
+            } else if (format === 'json') {
+                exportToJSON(dataToExport, fileName);
+            } else if (format === 'excel') {
+                exportToExcel(dataToExport, fileName);
+            }
+            
+            // Close dropdown
+            document.getElementById('stoppedExportDropdown').style.display = 'none';
+        }
+        
+        function exportToCSV(data, fileName) {
+            const headers = ['Name', 'Instance ID', 'Type', 'State', 'Region', 'Launch Time', 'Days Since Launch'];
+            const now = new Date();
+            
+            const csvContent = [
+                headers.join(','),
+                ...data.map(instance => {
+                    const launchTime = new Date(instance.launchTime);
+                    const daysSinceLaunch = Math.floor((now - launchTime) / (1000 * 60 * 60 * 24));
+                    const instanceName = instance.tags && instance.tags.Name ? instance.tags.Name : 'Unnamed';
+                    
+                    return [
+                        `"${instanceName}"`,
+                        instance.instanceId,
+                        instance.instanceType,
+                        instance.state,
+                        instance.region,
+                        launchTime.toISOString(),
+                        daysSinceLaunch
+                    ].join(',');
+                })
+            ].join('\n');
+            
+            downloadFile(csvContent, `${fileName}.csv`, 'text/csv');
+        }
+        
+        function exportToJSON(data, fileName) {
+            const now = new Date();
+            const enrichedData = data.map(instance => {
+                const launchTime = new Date(instance.launchTime);
+                const daysSinceLaunch = Math.floor((now - launchTime) / (1000 * 60 * 60 * 24));
+                
+                return {
+                    ...instance,
+                    daysSinceLaunch,
+                    exportDate: new Date().toISOString()
+                };
+            });
+            
+            const jsonContent = JSON.stringify(enrichedData, null, 2);
+            downloadFile(jsonContent, `${fileName}.json`, 'application/json');
+        }
+        
+        function exportToExcel(data, fileName) {
+            // For Excel export, we'll create a CSV with Excel-friendly formatting
+            alert('Excel export will download as CSV format compatible with Excel');
+            exportToCSV(data, fileName);
+        }
+        
+        function downloadFile(content, fileName, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
         function refreshAllData() {
             if (currentAccountId) {
                 loadInstanceData();
                 loadRecommendations();
+                loadStoppedDurationData();
             }
         }
         

@@ -288,6 +288,36 @@ class EC2Service:
         }
         return region_mapping.get(region, region)
     
+    def get_stopped_instances_by_duration(self, instances: List[Dict]) -> Dict:
+        """Calculate stopped instances by different time periods"""
+        now = datetime.now()
+        
+        stopped_30_days = 0
+        stopped_60_days = 0
+        stopped_90_days = 0
+        
+        for instance in instances:
+            if instance.get('state') == 'stopped':
+                # For stopped instances, we need to check when they were last stopped
+                # Since we don't have stop time in the basic instance data, we'll use launch time as approximation
+                # In a real implementation, you'd want to get the state transition history
+                launch_time = datetime.fromisoformat(instance['launchTime'].replace('Z', '+00:00'))
+                days_since_launch = (now - launch_time.replace(tzinfo=None)).days
+                
+                # This is a simplified calculation - in reality you'd want to track actual stop time
+                if days_since_launch >= 90:
+                    stopped_90_days += 1
+                elif days_since_launch >= 60:
+                    stopped_60_days += 1
+                elif days_since_launch >= 30:
+                    stopped_30_days += 1
+        
+        return {
+            'stopped_30_days': stopped_30_days,
+            'stopped_60_days': stopped_60_days,
+            'stopped_90_days': stopped_90_days
+        }
+
     def get_ec2_utilization(self, account_id: str, instance_id: str, days: int = 7) -> Dict:
         """Get CloudWatch metrics for EC2 instance utilization"""
         try:

@@ -488,12 +488,36 @@ def create_app():
             
             return jsonify({
                 'success': True,
-                'recommendations': recommendations,
-                'count': len(recommendations)
+                'recommendations': recommendations
             })
-            
+        
         except Exception as e:
-            logger.error(f"Error fetching recommendations: {str(e)}")
+            logger.error(f"Error getting recommendations for account {account_id}: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
+    @app.route('/ec2/api/accounts/<account_id>/stopped-duration')
+    def get_stopped_instances_duration(account_id):
+        """API endpoint to get stopped instances by duration"""
+        try:
+            ec2_service = app.config['EC2_SERVICE']
+            region = request.args.get('region')
+            
+            # Get all instances first
+            instances = ec2_service.get_ec2_instances(account_id, region)
+            
+            # Calculate stopped instances by duration
+            duration_data = ec2_service.get_stopped_instances_by_duration(instances)
+            
+            return jsonify({
+                'success': True,
+                'duration_data': duration_data
+            })
+        
+        except Exception as e:
+            logger.error(f"Error getting stopped instances duration for account {account_id}: {e}")
             return jsonify({
                 'success': False,
                 'error': str(e)
