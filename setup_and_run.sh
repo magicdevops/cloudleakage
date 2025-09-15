@@ -46,5 +46,8 @@ echo "⚙️  Press Ctrl+C to stop the server"
 echo "===================================="
 echo ""
 
+# Set Gemini API Key
+export GEMINI_API_KEY="AIzaSyDsUZkA2UgnZ5HuRCM3BKIeFkWzR7K33iI"
+
 # Run the Flask application
 python app.py
