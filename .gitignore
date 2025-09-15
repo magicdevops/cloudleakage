@@ -31,11 +31,11 @@ ENV/
 instance/
 .webassets-cache
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-cloudleakage.db
+# Database (commented out - we need these files for the application)
+# *.db
+# *.sqlite
+# *.sqlite3
+# cloudleakage.db
 
 # IDE
 .vscode/
