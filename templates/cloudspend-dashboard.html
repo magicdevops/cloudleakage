@@ -73,12 +73,6 @@
                     <div class="nav-section-title">Resources</div>
                     <div class="nav-item">
                         <a href="#" class="nav-link">
-                            <div class="icon"><i class="fas fa-database"></i></div>
-                            <span>Snapshots</span>
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="#" class="nav-link">
                             <div class="icon"><i class="fas fa-bell"></i></div>
                             <span>CloudWatch Alarms</span>
                         </a>
@@ -139,7 +133,7 @@
 
                 <!-- Metrics Grid -->
                 <div class="metrics-grid">
-                    <div class="metric-card {% if data.cost_change < 0 %}positive{% elif data.cost_change > 0 %}negative{% else %}neutral{% endif %}">
+                    <div class="metric-card clickable {% if data.cost_change < 0 %}positive{% elif data.cost_change > 0 %}negative{% else %}neutral{% endif %}" onclick="window.location.href='/reports'">
                         <div class="metric-header">
                             <div class="metric-title">Current Month Cost</div>
                             <div class="metric-icon">
@@ -153,7 +147,7 @@
                         </div>
                     </div>
 
-                    <div class="metric-card">
+                    <div class="metric-card clickable" onclick="window.location.href='/ec2'">
                         <div class="metric-header">
                             <div class="metric-title">Total Resources</div>
                             <div class="metric-icon">
@@ -167,7 +161,7 @@
                         </div>
                     </div>
 
-                    <div class="metric-card">
+                    <div class="metric-card clickable" onclick="showAlarmsModal()">
                         <div class="metric-header">
                             <div class="metric-title">Active Alarms</div>
                             <div class="metric-icon">
@@ -181,7 +175,7 @@
                         </div>
                     </div>
 
-                    <div class="metric-card">
+                    <div class="metric-card clickable" onclick="scrollToRecommendations()">
                         <div class="metric-header">
                             <div class="metric-title">Recommendations</div>
                             <div class="metric-icon">
@@ -279,7 +273,7 @@
                 labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
                 datasets: [{
                     label: 'Monthly Cost ($)',
-                    data: {{ data.cost_trend or [0, 0, 0, 0, 0] }},
+                    data: {% if data.cost_trend %}{{ data.cost_trend | tojson }}{% else %}[0, 0, 0, 0, 0]{% endif %},
                     borderColor: '#1a73e8',
                     backgroundColor: 'rgba(26, 115, 232, 0.1)',
                     borderWidth: 3,
@@ -335,6 +329,19 @@
                     costChart.update();
                 });
         }, 300000);
+
+        // Navigation functions for metric cards
+        function scrollToRecommendations() {
+            document.querySelector('.recommendations-grid').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        function showAlarmsModal() {
+            // For now, show an alert. In production, this would open a modal with alarm details
+            alert('CloudWatch Alarms feature coming soon! This will show detailed alarm information.');
+        }
     </script>
 </body>
 </html>

@@ -16,6 +16,7 @@ from simple_database import (
     init_database, CloudAccountService, CostDataService
 )
 from ec2_service import EC2Service
+from snapshot_service import SnapshotService
 from terraform_analyzer import analyze_state_file
 
 # Configure logging
@@ -46,11 +47,13 @@ def create_app():
     account_service = CloudAccountService(db_manager, app.config['CIPHER_SUITE'])
     cost_service = CostDataService(db_manager)
     ec2_service = EC2Service(db_manager, app.config['CIPHER_SUITE'])
+    snapshot_service = SnapshotService(db_manager, app.config['CIPHER_SUITE'])
     
     # Store services in app config for access in routes
     app.config['ACCOUNT_SERVICE'] = account_service
     app.config['COST_SERVICE'] = cost_service
     app.config['EC2_SERVICE'] = ec2_service
+    app.config['SNAPSHOT_SERVICE'] = snapshot_service
     app.config['DB_MANAGER'] = db_manager
     
     # Main dashboard route
@@ -518,6 +521,170 @@ def create_app():
         
         except Exception as e:
             logger.error(f"Error getting stopped instances duration for account {account_id}: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
+    # Snapshots Dashboard Route
+    @app.route('/snapshots')
+    @app.route('/snapshots/dashboard')
+    def snapshots_dashboard():
+        """Snapshots & AMI dashboard page"""
+        return render_template('snapshots/dashboard.html')
+    
+    @app.route('/snapshots/api/accounts/<account_id>/snapshots', methods=['GET'])
+    def get_snapshots(account_id):
+        """API endpoint to get snapshots for an account"""
+        try:
+            snapshot_service = app.config['SNAPSHOT_SERVICE']
+            region = request.args.get('region')
+            
+            snapshots = snapshot_service.get_snapshots(account_id, region)
+            
+            return jsonify({
+                'success': True,
+                'snapshots': snapshots
+            })
+        
+        except Exception as e:
+            logger.error(f"Error getting snapshots for account {account_id}: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
+    @app.route('/snapshots/api/accounts/<account_id>/analysis')
+    def get_snapshot_analysis(account_id):
+        """API endpoint to get snapshot analysis data"""
+        try:
+            snapshot_service = app.config['SNAPSHOT_SERVICE']
+            region = request.args.get('region')
+            
+            snapshots = snapshot_service.get_snapshots(account_id, region)
+            analysis = snapshot_service.get_snapshot_analysis(snapshots)
+            
+            return jsonify({
+                'success': True,
+                'analysis': analysis
+            })
+        
+        except Exception as e:
+            logger.error(f"Error getting snapshot analysis for account {account_id}: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
+    @app.route('/snapshots/api/accounts/<account_id>/volumes-without-snapshots')
+    def get_volumes_without_snapshots(account_id):
+        """API endpoint to get volumes without snapshots"""
+        try:
+            snapshot_service = app.config['SNAPSHOT_SERVICE']
+            region = request.args.get('region')
+            
+            volumes = snapshot_service.get_volumes_without_snapshots(account_id, region)
+            
+            return jsonify({
+                'success': True,
+                'volumes': volumes
+            })
+        
+        except Exception as e:
+            logger.error(f"Error getting volumes without snapshots for account {account_id}: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
+    @app.route('/snapshots/api/accounts/<account_id>/sync', methods=['POST'])
+    def sync_snapshot_data(account_id):
+        """API endpoint to sync snapshot data for an account"""
+        try:
+            snapshot_service = app.config['SNAPSHOT_SERVICE']
+            
+            # Fetch fresh snapshot data
+            snapshots = snapshot_service.get_snapshots(account_id, use_cache=False)
+            
+            # Store in database
+            snapshot_service.store_snapshot_data(account_id, snapshots)
+            
+            return jsonify({
+                'success': True,
+                'snapshots_synced': len(snapshots),
+                'message': f'Successfully synced {len(snapshots)} snapshots'
+            })
+        
+        except Exception as e:
+            logger.error(f"Error syncing snapshot data for account {account_id}: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
+    # AMI API endpoints
+    @app.route('/snapshots/api/accounts/<account_id>/amis', methods=['GET'])
+    def get_ami_analysis(account_id):
+        """API endpoint to get AMI analysis data"""
+        try:
+            snapshot_service = app.config['SNAPSHOT_SERVICE']
+            region = request.args.get('region')
+            
+            # Get AMI analysis data
+            analysis = snapshot_service.get_ami_analysis(account_id, region)
+            
+            return jsonify({
+                'success': True,
+                'analysis': analysis
+            })
+        
+        except Exception as e:
+            logger.error(f"Error getting AMI analysis for account {account_id}: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
+    @app.route('/snapshots/api/accounts/<account_id>/amis/list', methods=['GET'])
+    def get_amis_list(account_id):
+        """API endpoint to get AMIs list for an account"""
+        try:
+            snapshot_service = app.config['SNAPSHOT_SERVICE']
+            region = request.args.get('region')
+            
+            # Get AMIs data
+            amis = snapshot_service.get_amis(account_id, region)
+            
+            return jsonify({
+                'success': True,
+                'amis': amis
+            })
+        
+        except Exception as e:
+            logger.error(f"Error getting AMIs for account {account_id}: {e}")
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+    
+    @app.route('/snapshots/api/accounts/<account_id>/big-volume-snapshots', methods=['GET'])
+    def get_big_volume_snapshots(account_id):
+        """API endpoint to get big volume snapshots list for an account"""
+        try:
+            snapshot_service = app.config['SNAPSHOT_SERVICE']
+            region = request.args.get('region')
+            size_threshold = int(request.args.get('size_threshold', 100))
+            
+            # Get big volume snapshots data
+            big_snapshots = snapshot_service.get_big_volume_snapshots(account_id, region, size_threshold)
+            
+            return jsonify({
+                'success': True,
+                'snapshots': big_snapshots
+            })
+        
+        except Exception as e:
+            logger.error(f"Error getting big volume snapshots for account {account_id}: {e}")
             return jsonify({
                 'success': False,
                 'error': str(e)

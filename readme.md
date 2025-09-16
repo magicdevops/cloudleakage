@@ -7,10 +7,11 @@ A comprehensive Flask-based web application for monitoring, analyzing, and optim
 ### 🎯 Core Functionality
 - **Real-time Cost Dashboard** - Monitor current and historical AWS spending
 - **EC2 Instance Management** - Comprehensive EC2 dashboard with real-time monitoring
+- **Snapshot Management** - Advanced EBS snapshot monitoring and optimization
 - **Cost Trend Analysis** - Visualize spending patterns with interactive charts
 - **Service Breakdown** - Detailed cost analysis by AWS service
 - **Optimization Recommendations** - AI-powered suggestions to reduce costs
-- **Data Export** - Export EC2 data in CSV, JSON, and Excel formats
+- **Data Export** - Export EC2, snapshot, and cost data in CSV, JSON, and Excel formats
 - **Business Unit Management** - Organize costs by department/team
 - **Account Integration** - Secure AWS account connection wizard
 - **Terraform State Analyzer** - Visualize infrastructure from `terraform.tfstate` files
@@ -50,6 +51,7 @@ python app.py
 - Open your browser to: http://127.0.0.1:5000
 - Main Dashboard: http://127.0.0.1:5000/dashboard
 - EC2 Dashboard: http://127.0.0.1:5000/ec2
+- Snapshots Dashboard: http://127.0.0.1:5000/snapshots
 
 ## 🗄️ Database Setup
 
@@ -113,6 +115,8 @@ The application automatically creates these tables:
 - **`cost_data`** - AWS cost and usage data
 - **`sync_history`** - Synchronization operation tracking
 - **`ec2_instances`** - EC2 instance data and metadata
+- **`snapshots`** - EBS snapshot data and metadata
+- **`volumes`** - EBS volume information and snapshot relationships
 
 ### Security Configuration
 ```bash
@@ -136,6 +140,7 @@ cloudleakage/
 ├── cloudleakage.db                 # SQLite database (auto-created)
 ├── account_manager.py              # AWS account management
 ├── ec2_service.py                  # EC2 instance operations
+├── snapshot_service.py             # EBS snapshot operations
 ├── terraform_analyzer.py           # Terraform state parsing logic
 ├── simple_database.py              # Simple database implementation
 ├── static/
@@ -147,11 +152,13 @@ cloudleakage/
     │   └── index.html              # Business units page
     ├── ec2/
     │   └── dashboard.html          # EC2 management dashboard
+    ├── snapshots/
+    │   └── dashboard.html          # Snapshot management dashboard
     ├── integration/
     │   ├── accounts.html           # Account management
     │   └── wizard.html             # Integration wizard
-    └── sync_management/
-        └── index.html              # Sync management
+    └── terraform/
+        └── analyzer.html           # Terraform state analyzer
 ```
 
 ## Key Pages
@@ -171,6 +178,16 @@ cloudleakage/
 - Data export (CSV, JSON, Excel formats)
 - Multi-region support
 - Sync functionality for real-time updates
+
+### 📸 Snapshots Dashboard (`/snapshots`)
+- **EBS Snapshot Management** - Monitor all EBS snapshots across AWS regions
+- **Enterprise-Style Widgets** - Professional metrics cards with meaningful icons
+- **Comprehensive Export Options** - Export snapshot data in CSV, JSON, and Excel formats
+- **Advanced Filtering** - Filter by region, age, and snapshot status
+- **Cost Optimization Insights** - Identify old snapshots (30, 60, 90+ days) for cleanup
+- **Volume Relationship Tracking** - Monitor volumes with and without snapshots
+- **Multi-Region Support** - Complete coverage of all 34 AWS regions
+- **Real-Time Data Sync** - Automatic data refresh and synchronization
 
 ### 🏢 Business Units (`/business-units`)
 - Cost allocation by department
@@ -200,6 +217,12 @@ cloudleakage/
 - `POST /ec2/api/accounts/{id}/sync` - Sync EC2 data
 - `GET /ec2/api/accounts/{id}/recommendations` - Get EC2 optimization recommendations
 
+### Snapshots Management
+- `GET /snapshots/api/accounts/{id}/snapshots` - Get EBS snapshots
+- `GET /snapshots/api/accounts/{id}/analysis` - Get snapshot analysis data
+- `GET /snapshots/api/accounts/{id}/volumes-without-snapshots` - Get volumes without snapshots
+- `POST /snapshots/api/accounts/{id}/sync` - Sync snapshot data
+
 ### Integration
 - `POST /integration/api/accounts` - Create AWS account integration
 - `POST /integration/api/policy/generate` - Generate IAM policy
@@ -227,6 +250,8 @@ The tool uses IAM roles for secure access to AWS Cost Explorer and other service
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeRegions",
         "ec2:DescribeAvailabilityZones",
+        "ec2:DescribeSnapshots",
+        "ec2:DescribeVolumes",
         "cloudwatch:GetMetricStatistics",
         "pricing:GetProducts"
       ],
